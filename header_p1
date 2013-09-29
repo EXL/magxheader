@@ -1,0 +1,34 @@
+######################################################################
+
+######################################################################
+# ======= Start Header *.pro file for MotoMagX platform
+######################################################################
+
+# Global App Settings
+TEMPLATE = app
+CONFIG -= console
+CONFIG -= app_bundle
+CONFIG -= qt
+CONFIG += warn_off
+
+# Using the old rules of moc
+CONFIG += moc_old
+
+# Platform section
+# Write here the necessary platform.
+# Available platforms:
+######################
+# platform-z6
+# platform-v8
+# platform-e8
+# platform-em30
+# platform-u9
+# platform-z6w
+# platform-zn5
+# platform-em35
+# platform-ve66
+######################
+CONFIG += platform-zn5
+
+# Global Vars
+TOOLCHAIN_PATH = /opt/toolchains/motomagx/arm-eabi

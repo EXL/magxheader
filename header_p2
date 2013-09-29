@@ -1,0 +1,104 @@
+APPEXT = .magx
+ARMLIB = $${TOOLCHAIN_PATH}/arm-linux-gnueabi/lib
+
+# ARM11 CPU Optimizations
+ARM_CPU_OPT += -march=armv6j -mtune=arm1136jf-s -mfpu=vfp
+
+# Platform dependences and settings
+platform-z6 {
+    QT_PATH += $${TOOLCHAIN_PATH}/lib/qt-2.3.8
+    EZX_PATH += $${TOOLCHAIN_PATH}/lib/ezx-z6
+    DEP_LIBS += -lm -lqte-mt -lezxpm -ljpeg -lezxappbase -lezxtapi-xscale-r -llog_util -llighting
+    DEP_DEFINES += EZX_Z6
+    TARGET  = $${APPNAME}_Z6$${APPEXT}
+} platform-v8 {
+    QT_PATH += $${TOOLCHAIN_PATH}/lib/qt-v8
+    EZX_PATH += $${TOOLCHAIN_PATH}/lib/ezx-v8
+    DEP_LIBS += -lm -lqte-mt -lezxpm -lezxappbase
+    DEP_DEFINES += EZX_V8
+    TARGET  = $${APPNAME}_V8$${APPEXT}
+} platform-e8 {
+    ARMLIB = $${TOOLCHAIN_PATH}/arm-linux-gnueabi/lib_E8
+    QT_PATH += $${TOOLCHAIN_PATH}/lib/qt-e8
+    EZX_PATH += $${TOOLCHAIN_PATH}/lib/ezx-e8
+    DEP_LIBS += -lm -lqte-mt -lezxappbase
+    DEP_DEFINES += EZX_E8
+    TARGET  = $${APPNAME}_E8$${APPEXT}
+} platform-em30 {
+    ARMLIB = $${TOOLCHAIN_PATH}/arm-linux-gnueabi/lib_E8
+    QT_PATH += $${TOOLCHAIN_PATH}/lib/qt-em30
+    EZX2_PATH += $${TOOLCHAIN_PATH}/lib/ezx-e8
+    EZX_PATH += $${TOOLCHAIN_PATH}/lib/ezx-em30
+    DEP_LIBS += -lm -lqte-mt -lezxappbase
+    DEP_DEFINES += EZX_EM30
+    TARGET  = $${APPNAME}_EM30$${APPEXT}
+} platform-u9 {
+    QT_PATH += $${TOOLCHAIN_PATH}/lib/qt-zn5
+    EZX2_PATH += $${TOOLCHAIN_PATH}/lib/ezx-zn5
+    EZX_PATH += $${TOOLCHAIN_PATH}/lib/ezx-u9
+    DEP_LIBS += -lm -lqte-mt -lezxappbase -llighting
+    DEP_DEFINES += EZX_U9
+    TARGET  = $${APPNAME}_U9$${APPEXT}
+} platform-z6w {
+    QT_PATH += $${TOOLCHAIN_PATH}/lib/qt-z6w
+    EZX_PATH += $${TOOLCHAIN_PATH}/lib/ezx-z6w
+    DEP_LIBS += -lm -lqte-mt -lezxappbase
+    DEP_DEFINES += EZX_Z6W
+    TARGET  = $${APPNAME}_Z6W$${APPEXT}
+} platform-zn5 {
+    QT_PATH += $${TOOLCHAIN_PATH}/lib/qt-zn5
+    EZX_PATH += $${TOOLCHAIN_PATH}/lib/ezx-zn5
+    DEP_LIBS += -lm -lqte-mt -lezxappbase
+    DEP_DEFINES += EZX_ZN5
+    TARGET  = $${APPNAME}_ZN5$${APPEXT}
+} platform-em35 {
+    ARMLIB = $${TOOLCHAIN_PATH}/arm-linux-gnueabi/lib_E8
+    QT_PATH += $${TOOLCHAIN_PATH}/lib/qt-em35
+    EZX_PATH += $${TOOLCHAIN_PATH}/lib/ezx-em35
+    DEP_LIBS += -lm -lqte-mt -lezxappbase
+    DEP_DEFINES += EZX_EM35
+    TARGET  = $${APPNAME}_EM35$${APPEXT}
+} platform-ve66 {
+    ARMLIB = $${TOOLCHAIN_PATH}/arm-linux-gnueabi/lib_E8
+    QT_PATH += $${TOOLCHAIN_PATH}/lib/qt-em35
+    EZX_PATH += $${TOOLCHAIN_PATH}/lib/ezx-ve66
+    DEP_LIBS += -lm -lqte-mt -lezxappbase
+    DEP_DEFINES += EZX_VE66
+    TARGET  = $${APPNAME}_VE66$${APPEXT}
+}
+
+# Meta Object Compiler Binary
+# Warning: MotoMagx Toolchain need the patched qmake for successful compilation
+# Because using a very old version of Meta Object Compiler
+QMAKE_MOC = $${QT_PATH}/bin/moc
+
+# General Section
+DEFINES += $${DEP_DEFINES} QWS WITHOUT_EDIT_INTERNET_PROFILE WITHOUT_LANG_FILE
+QMAKE_CFLAGS_DEBUG +=
+QMAKE_CFLAGS_RELEASE += -DNO_DEBUG
+QMAKE_CXXFLAGS_DEBUG += -pipe -fno-exceptions -fno-rtti -Wall -W
+QMAKE_CXXFLAGS_RELEASE += $${QMAKE_CXXFLAGS_DEBUG} -O2 -DNO_DEBUG $${ARM_CPU_OPT}
+
+INCLUDEPATH += $${QT_PATH}/include
+INCLUDEPATH += $${EZX_PATH}/include
+INCLUDEPATH += $${TOOLCHAIN_PATH}/arm-linux-gnueabi/include
+
+platform-em30|platform-u9 {
+    INCLUDEPATH += $${EZX2_PATH}/include
+}
+
+QMAKE_LFLAGS += -Wl,-rpath-link,$${EZX_PATH}/lib
+
+platform-em30|platform-u9 {
+    LIBS += -L$${EZX_PATH}/lib -L$${EZX2_PATH}/lib -L$${ARMLIB} -L$${QT_PATH}/lib $${DEP_LIBS}
+} else {
+    LIBS += -L$${EZX_PATH}/lib -L$${ARMLIB} -L$${QT_PATH}/lib $${DEP_LIBS}
+}
+
+CONFIG(release, debug|release) {
+    QMAKE_POST_LINK += $(STRIP) $(TARGET)
+}
+
+######################################################################
+# ======= End Header *.pro file for MotoMagX platform
+######################################################################
