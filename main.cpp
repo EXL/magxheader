@@ -7,7 +7,8 @@
 
 #define NUM_OF_FILES 4
 
-int num_of_input(const QVector<QString> &vector) {
+int num_of_input(const QVector<QString> &vector)
+{
     for(int i = 0; i < vector.size(); ++i) {
         if (vector[i].contains("DEPENDPATH")) {
             return i;
@@ -16,13 +17,25 @@ int num_of_input(const QVector<QString> &vector) {
     return 0;
 }
 
-void cut_vector(int begin, int end, QVector<QString> &vector) {
+void cut_vector(int begin, int end, QVector<QString> &vector)
+{
     vector.remove(begin, end);
 }
 
-void full_vector(QTextStream &in, QVector<QString> &vector) {
+void full_vector(QTextStream &in, QVector<QString> &vector)
+{
     while (!(in.atEnd())) {
         vector.push_back(in.readLine());
+    }
+}
+
+void close_files(QFile *file, bool qRemove)
+{
+    for (int i = 0; i < NUM_OF_FILES; ++i) {
+        file[i].close();
+        if (qRemove) {
+            file[NUM_OF_FILES - 1].remove();
+        }
     }
 }
 
@@ -31,7 +44,7 @@ int main(int argc, char *argv[])
     if (argc != 3) {
        qDebug() << "Please use:";
        qDebug() << "\t./magxheader [*.pro file] [appname]";
-       return (-1);
+       return 1;
     }
 
     QDateTime dt = QDateTime::currentDateTime();
@@ -45,7 +58,7 @@ int main(int argc, char *argv[])
     QString pro_file = QString(argv[1]);
     if (!pro_file.contains(".pro")) {
             qDebug() << "This is not *.pro file!";
-            return (-2);
+            return 2;
     }
     QStringList dest = pro_file.split(".");
     pro_file = dest[0] + "_magx." + dest[1];
@@ -60,12 +73,12 @@ int main(int argc, char *argv[])
         if (i < 3) {
             if (!file[i].open(QIODevice::ReadOnly | QIODevice::Text)) {
                 qDebug() << "Error openning" << file[i].fileName() << "for reading!";
-                return (-3);
+                return 3;
             }
         } else {
             if (!file[i].open(QIODevice::WriteOnly | QIODevice::Text)) {
                 qDebug() << "Error openning" << file[i].fileName() << "for writing!";
-                return (-4);
+                return 4;
             }
         }
     }
@@ -78,7 +91,15 @@ int main(int argc, char *argv[])
     }
 
     full_vector(textStream[0], end_vector);
-    cut_vector(0, num_of_input(end_vector), end_vector);
+
+    int num_cut = num_of_input(end_vector);
+    if (num_cut <= 0) {
+        qDebug() << "\"DEPENDPATH\" string not found!\nCheck you *.pro file!";
+        close_files(file, true);
+        return 5;
+    }
+
+    cut_vector(0, num_cut, end_vector);
     full_vector(textStream[1], head_vector);
     full_vector(textStream[2], mid_vector);
 
@@ -100,9 +121,9 @@ int main(int argc, char *argv[])
     for (int i = 0; i < end_vector.size(); ++i) {
         textStream[3] << end_vector[i] << '\n';
     }
-    for (int i = 0; i < NUM_OF_FILES; ++i) {
-        file[i].close();
-    }
+
+    close_files(file, false);
+
     qDebug() << "Writing " << pro_file << "...\nAll done!";
 
     return 0;
